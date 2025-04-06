@@ -56,10 +56,9 @@ Thumbs.db
 *.sqlite3
 
 # Static files directory
-static/
 
-# Templates directory
-templates/
+
+
 
 # Node modules (if you're using any frontend dependencies)
 node_modules/

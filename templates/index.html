@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .table-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .table-info {
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .help-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 2px;
+        }
+    </style>
+    <!-- Load axios before app.js -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Database Admin Panel</h1>
+        
+        <!-- Role Selection -->
+        <div class="role-selector">
+            <h2>Select Role</h2>
+            <select id="role-select" onchange="changeRole()">
+                <option value="">Select a role</option>
+                <option value="role1">Role 1 (Create/Insert)</option>
+                <option value="role2">Role 2 (View/Delete)</option>
+                <option value="role3">Role 3 (Update)</option>
+            </select>
+        </div>
+
+        <div class="tabs">
+            <!-- <button class="tab-btn role1-only" onclick="openTab('create-tab')">Create</button> -->
+            <!-- <button class="tab-btn role2-only" onclick="openTab('tables-tab')">Tables</button> -->
+            <!-- <button class="tab-btn role3-only" onclick="openTab('update-tab')">Update</button> -->
+        </div>
+
+        <!-- Create Tab (Role 1) -->
+        <div id="create-tab" class="tab-content role1-only">
+            <h2>Create Table</h2>
+            <div class="form-group">
+                <label for="new-table-name">Table Name:</label>
+                <input type="text" id="new-table-name" required>
+                <div class="help-text">Enter a name for your new table</div>
+            </div>
+            <div class="button-group">
+                <button onclick="createTable()">Create Table</button>
+                <span id="create-message" class="inline-message"></span>
+            </div>
+            
+            <h3>Insert Data</h3>
+            <div class="form-group">
+                <label for="table-name">Table Name:</label>
+                <input type="text" id="table-name-insert-data" required>
+            </div>
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" required>
+            </div>
+            <div class="form-group">
+                <label for="age">Age:</label>
+                <input type="number" id="age" min="0" required>
+                <div class="help-text">Enter a valid positive number</div>
+            </div>
+            <div class="button-group">
+                <button onclick="insertData()">Insert Data</button>
+                <span id="insert-message" class="inline-message"></span>
+            </div>
+        </div>
+
+        <!-- Tables Management Tab (Role 2) -->
+        <div id="tables-tab" class="tab-content role2-only">
+            <h2>Tables Management</h2>
+            <button onclick="getAllTables()">Get All Tables</button>
+            <br><br>
+            <div class="form-group">
+                <label for="table-name">Table Name:</label>
+                <input type="text" id="table-name" value="" required>
+                <div class="help-text">Enter the name of the table you want to manage</div>
+            </div>
+            <button onclick="getTableInfo()">Get Table Info</button>
+            <button onclick="deleteTable()" class="danger">Delete Table</button>
+            <div id="tables-result"></div>
+        </div>
+
+        <!-- Update Tab (Role 3) -->
+        <div id="update-tab" class="tab-content role3-only">
+            <h2>Update Table</h2>
+            <h3>Update Table</h3>
+            <div class="form-group">
+                <label for="table-to-update">Table Name:</label>
+                <input type="text" id="table-to-update" required>
+                <div class="help-text">Enter the name of the table to update</div>
+            </div>
+            <div class="form-group">
+                <label for="new-table-name">New Table Name:</label>
+                <input type="text" id="new-table-name">
+                <div class="help-text">Optional: Enter a new name for the table</div>
+            </div>
+            <div class="form-group">
+                <label for="new-name-col">New Name Column:</label>
+                <input type="text" id="new-name-col" pattern="[a-zA-Z][a-zA-Z0-9_]*">
+                <div class="help-text">Optional: Enter a new name for the name column</div>
+            </div>
+            <div class="form-group">
+                <label for="new-age-col">New Age Value:</label>
+                <input type="number" id="new-age-col" min="0">
+                <div class="help-text">Optional: Enter a new age value</div>
+            </div>
+            <div class="button-group">
+                <button onclick="updateTable()">Update Table</button>
+                <span id="update-message" class="inline-message"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load app.js at the end of body -->
+    <script src="{{ url_for('static', path='js/app.js') }}"></script>
+</body>
+
+</html>
